@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>コンビニで住民票の写しを取る方法</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #19324d;
+      --muted: #5f6f82;
+      --paper: #fffaf0;
+      --line: #d9c486;
+      --accent: #d39a00;
+      --accent-strong: #b66c00;
+      --blue: #0d4e9a;
+      --green: #207a58;
+      --shadow: 0 18px 50px rgba(35, 32, 20, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255, 215, 99, 0.24), transparent 32rem),
+        linear-gradient(135deg, #f8efd9 0%, #f4f7fb 54%, #e9f3ef 100%);
+      color: var(--ink);
+      font-family: "Yu Gothic", "YuGothic", "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      min-height: 100dvh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      height: 100dvh;
+      padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: clamp(18px, 4vw, 28px);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: clamp(12px, 2.4vw, 14px);
+    }
+
+    .counter {
+      flex: 0 0 auto;
+      min-width: 76px;
+      padding: 8px 10px;
+      border: 2px solid rgba(25, 50, 77, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      text-align: center;
+      font-weight: 800;
+      color: var(--accent-strong);
+    }
+
+    .reader {
+      position: relative;
+      min-height: 0;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .track {
+      display: flex;
+      height: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .page {
+      position: relative;
+      flex: 0 0 100%;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
+      height: 100%;
+      padding: clamp(10px, 2vw, 18px);
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 252, 244, 0.9)),
+        repeating-linear-gradient(45deg, rgba(211, 154, 0, 0.07) 0 8px, transparent 8px 16px);
+    }
+
+    .page-media {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .page-media img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border: 3px solid #141414;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(22, 32, 50, 0.14);
+    }
+
+    .caption {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: clamp(14px, 3.5vw, 20px);
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .intro,
+    .summary {
+      display: grid;
+      align-content: center;
+      gap: clamp(12px, 2vw, 18px);
+      max-width: 860px;
+      width: min(100%, 860px);
+      min-height: 100%;
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 42px);
+      border: 4px solid #1c2532;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 225, 0.96)),
+        repeating-linear-gradient(0deg, transparent 0 26px, rgba(13, 78, 154, 0.06) 26px 28px);
+      box-shadow: inset 0 0 0 6px rgba(211, 154, 0, 0.12);
+    }
+
+    .eyebrow {
+      width: fit-content;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      font-size: clamp(13px, 3vw, 16px);
+    }
+
+    .intro h2,
+    .summary h2 {
+      margin: 0;
+      font-size: clamp(30px, 8vw, 62px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      color: var(--accent-strong);
+    }
+
+    .intro-lead,
+    .summary-lead {
+      margin: 0;
+      font-size: clamp(16px, 4vw, 24px);
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .check-card {
+      min-height: 92px;
+      padding: 12px;
+      border: 2px solid rgba(13, 78, 154, 0.22);
+      border-radius: 8px;
+      background: #fff;
+      font-weight: 800;
+      font-size: clamp(14px, 3.4vw, 20px);
+      line-height: 1.35;
+    }
+
+    .check-card span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--green);
+      font-size: 13px;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .summary-list li {
+      padding: 12px 14px;
+      border-left: 8px solid var(--accent);
+      border-radius: 6px;
+      background: #fff;
+      font-weight: 800;
+      font-size: clamp(15px, 3.5vw, 21px);
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) 52px;
+      align-items: center;
+      gap: 10px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .nav-button {
+      width: 52px;
+      height: 44px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .nav-button:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(25, 50, 77, 0.25);
+    }
+
+    .dot.is-active {
+      width: 22px;
+      border-radius: 999px;
+      background: var(--accent-strong);
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        gap: 8px;
+      }
+
+      .reader {
+        border-radius: 6px;
+      }
+
+      .page {
+        padding: 8px;
+      }
+
+      .caption {
+        min-height: 72px;
+      }
+
+      .badge {
+        width: 34px;
+        height: 34px;
+      }
+
+      .check-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .intro,
+      .summary {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1 class="brand-title">コンビニで住民票の写しを取る方法</h1>
+        <p class="brand-subtitle">横にスワイプして手順を確認</p>
+      </div>
+      <div class="counter" aria-live="polite"><span id="currentPage">1</span> / 14</div>
+    </header>
+
+    <section class="reader" aria-label="住民票の写し取得手順">
+      <div class="track" id="track">
+        <article class="page" aria-label="1ページ目">
+          <div class="intro">
+            <div class="eyebrow">1ページ目</div>
+            <h2>はじめる前の<br>4つの確認</h2>
+            <p class="intro-lead">コンビニのマルチコピー機で、住民票の写しを取得する流れを確認します。</p>
+            <div class="check-grid" aria-label="必要事項">
+              <div class="check-card"><span>タイトル</span>コンビニで住民票の写しを取る方法</div>
+              <div class="check-card"><span>必要なもの</span>マイナンバーカード、暗証番号、手数料</div>
+              <div class="check-card"><span>利用前チェック</span>自治体がコンビニ交付に対応しているか確認</div>
+              <div class="check-card"><span>最初の行動</span>コンビニのマルチコピー機へ行く</div>
+            </div>
+          </div>
+          <p class="caption"><span class="badge">1</span>準備ができたら、次のページから実際の画面に沿って進みます。</p>
+        </article>
+
+        <article class="page" aria-label="2ページ目">
+          <div class="page-media"><img src="assets/pages/2ページ目.png" alt="マルチコピー機のトップ画面で行政サービスを選ぶ"></div>
+          <p class="caption"><span class="badge">2</span>マルチコピー機の画面で「行政サービス」を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="3ページ目">
+          <div class="page-media"><img src="assets/pages/3ページ目.png" alt="行政サービス画面で証明書の交付を選ぶ"></div>
+          <p class="caption"><span class="badge">3</span>「証明書の交付」を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="4ページ目">
+          <div class="page-media"><img src="assets/pages/4ページ目.png" alt="証明書交付サービスを選択する画面"></div>
+          <p class="caption"><span class="badge">4</span>「証明書交付サービス（コンビニ交付）」を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="5ページ目">
+          <div class="page-media"><img src="assets/pages/5ページ目.png" alt="必要な証明書を選ぶ画面"></div>
+          <p class="caption"><span class="badge">5</span>「お住まいの市区町村の証明書」を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="6ページ目">
+          <div class="page-media"><img src="assets/pages/6ページ目.png" alt="マイナンバーカードをセットして待つ画面"></div>
+          <p class="caption"><span class="badge">6</span>マイナンバーカードをセットして、読み取りが終わるまで待ちます。</p>
+        </article>
+
+        <article class="page" aria-label="7ページ目">
+          <div class="page-media"><img src="assets/pages/7ページ目.png" alt="暗証番号4桁を入力する画面"></div>
+          <p class="caption"><span class="badge">7</span>利用者証明用電子証明書の暗証番号4桁を入力します。</p>
+        </article>
+
+        <article class="page" aria-label="8ページ目">
+          <div class="page-media"><img src="assets/pages/8ページ目.png" alt="カードを取り外す案内画面"></div>
+          <p class="caption"><span class="badge">8</span>案内が出たら、マイナンバーカードを取り外します。</p>
+        </article>
+
+        <article class="page" aria-label="9ページ目">
+          <div class="page-media"><img src="assets/pages/9ページ目.png" alt="必要な証明書として住民票の写しを選ぶ画面"></div>
+          <p class="caption"><span class="badge">9</span>必要な証明書の一覧から「住民票の写し」を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="10ページ目">
+          <div class="page-media"><img src="assets/pages/10ページ目.png" alt="交付種別を選ぶ画面"></div>
+          <p class="caption"><span class="badge">10</span>本人のみ、世帯全員、世帯の一部など、交付種別を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="11ページ目">
+          <div class="page-media"><img src="assets/pages/11ページ目.png" alt="証明書の記載項目を選択する画面"></div>
+          <p class="caption"><span class="badge">11</span>世帯主・続柄、本籍地、マイナンバーなどの記載有無を選びます。</p>
+        </article>
+
+        <article class="page" aria-label="12ページ目">
+          <div class="page-media"><img src="assets/pages/12ページ目.png" alt="必要な部数を入力する画面"></div>
+          <p class="caption"><span class="badge">12</span>必要な部数を入力して「確定する」を押します。</p>
+        </article>
+
+        <article class="page" aria-label="13ページ目">
+          <div class="page-media"><img src="assets/pages/13ページ目.png" alt="受付内容を確認して確定する画面"></div>
+          <p class="caption"><span class="badge">13</span>内容を確認し、問題なければ「確定する」を押します。</p>
+        </article>
+
+        <article class="page" aria-label="14ページ目">
+          <div class="summary">
+            <div class="eyebrow">14ページ目</div>
+            <h2>最後に<br>ここを確認</h2>
+            <p class="summary-lead">印刷が終わったら、画面と排出口まわりを落ち着いて確認します。</p>
+            <ul class="summary-list">
+              <li>住民票の写し、領収書、マイナンバーカードを受け取る</li>
+              <li>氏名や住所など、必要な内容が印刷されているか確認する</li>
+              <li>自治体により手数料、利用時間、選べる項目が異なる場合があります</li>
+            </ul>
+          </div>
+          <p class="caption"><span class="badge">14</span>取り忘れがないことを確認したら、これで完了です。</p>
+        </article>
+      </div>
+    </section>
+
+    <nav class="controls" aria-label="ページ操作">
+      <button class="nav-button" id="prevButton" type="button" aria-label="前のページ">‹</button>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <button class="nav-button" id="nextButton" type="button" aria-label="次のページ">›</button>
+    </nav>
+  </main>
+
+  <script>
+    const track = document.getElementById("track");
+    const pages = Array.from(track.querySelectorAll(".page"));
+    const currentPage = document.getElementById("currentPage");
+    const prevButton = document.getElementById("prevButton");
+    const nextButton = document.getElementById("nextButton");
+    const dots = document.getElementById("dots");
+    let activeIndex = 0;
+
+    pages.forEach((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dots.appendChild(dot);
+    });
+
+    const dotItems = Array.from(dots.children);
+
+    function goToPage(index) {
+      const clamped = Math.max(0, Math.min(index, pages.length - 1));
+      pages[clamped].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+
+    function setActive(index) {
+      activeIndex = Math.max(0, Math.min(index, pages.length - 1));
+      currentPage.textContent = String(activeIndex + 1);
+      prevButton.disabled = activeIndex === 0;
+      nextButton.disabled = activeIndex === pages.length - 1;
+      dotItems.forEach((dot, dotIndex) => {
+        dot.classList.toggle("is-active", dotIndex === activeIndex);
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      setActive(pages.indexOf(visible.target));
+    }, {
+      root: track,
+      threshold: [0.55, 0.75, 0.95]
+    });
+
+    pages.forEach((page) => observer.observe(page));
+    prevButton.addEventListener("click", () => goToPage(activeIndex - 1));
+    nextButton.addEventListener("click", () => goToPage(activeIndex + 1));
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") goToPage(activeIndex - 1);
+      if (event.key === "ArrowRight") goToPage(activeIndex + 1);
+    });
+
+    setActive(0);
+  </script>
+</body>
+</html>
